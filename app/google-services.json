@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "689765556219",
+    "project_id": "sg-motion-eb83c",
+    "storage_bucket": "sg-motion-eb83c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689765556219:android:ac4a528e3d95d2d6f0755e",
+        "android_client_info": {
+          "package_name": "com.example.jcmotion"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWsiseHgQcfHBGKN6LAuvbpeZhqnJCQDs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689765556219:android:694b52064e198f2bf0755e",
+        "android_client_info": {
+          "package_name": "com.example.nonton"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWsiseHgQcfHBGKN6LAuvbpeZhqnJCQDs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689765556219:android:606ed7a29ae018fdf0755e",
+        "android_client_info": {
+          "package_name": "sg.motion.tutorialfirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWsiseHgQcfHBGKN6LAuvbpeZhqnJCQDs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
