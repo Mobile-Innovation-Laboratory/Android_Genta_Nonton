@@ -1,5 +1,6 @@
 package com.example.nonton.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,6 +27,7 @@ fun LoginScreen(navController: NavController) {
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -73,16 +75,22 @@ fun LoginScreen(navController: NavController) {
 
             Button(
                 onClick = {
+                    if (email.isBlank() || password.isBlank()) {
+                        errorMessage = "Email dan password tidak boleh kosong"
+                        return@Button
+                    }
+
                     isLoading = true
                     auth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener { task ->
                             isLoading = false
                             if (task.isSuccessful) {
+                                Toast.makeText(context, "Login Berhasil", Toast.LENGTH_SHORT).show()
                                 navController.navigate(Screen.Home.route) {
                                     popUpTo(Screen.Login.route) { inclusive = true }
                                 }
                             } else {
-                                errorMessage = task.exception?.message ?: "Login failed"
+                                errorMessage = task.exception?.message ?: "Login Gagal"
                             }
                         }
                 },

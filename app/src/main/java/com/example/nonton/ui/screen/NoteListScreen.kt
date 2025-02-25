@@ -1,10 +1,12 @@
 package com.example.nonton.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -18,13 +20,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.nonton.data.model.Note
 import com.example.nonton.data.repository.NotesRepository
+import com.example.nonton.ui.navigation.Screen
 import com.example.nonton.ui.viewmodel.NotesViewModel
 import com.example.nonton.ui.viewmodel.NotesViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteListScreen(
-    navController: NavController? = null,
+    navController: NavController,
     repository: NotesRepository
 ) {
     val viewModel: NotesViewModel = viewModel(factory = NotesViewModelFactory(repository))
@@ -33,12 +36,27 @@ fun NoteListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("My Notes", style = MaterialTheme.typography.headlineSmall) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
+            CenterAlignedTopAppBar(
+                title = {  },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.navigate(Screen.Home.route)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                },
+                actions = {
+                    Text(
+                        text = "Movie Notes",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(end = 16.dp)
+                    )
+                },
             )
         },
         floatingActionButton = {
@@ -49,7 +67,7 @@ fun NoteListScreen(
                         newNote = ""
                     }
                 },
-                containerColor = MaterialTheme.colorScheme.secondary
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Note", tint = Color.White)
             }
@@ -64,33 +82,37 @@ fun NoteListScreen(
             OutlinedTextField(
                 value = newNote,
                 onValueChange = { newNote = it },
-                placeholder = { Text("Write something...") },
+                placeholder = { Text("Note your movie...") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Gray
+                )
             )
             Spacer(Modifier.height(16.dp))
-            if (notes.isEmpty()) {
+            AnimatedVisibility(visible = notes.isEmpty()) {
                 Text(
                     "No notes available",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     color = Color.Gray
                 )
-            } else {
-                LazyColumn {
-                    items(notes) { note ->
-                        NoteItem(
-                            note,
-                            onDelete = { viewModel.deleteNote(note.id) },
-                            onUpdate = { newContent -> viewModel.updateNote(note.id, newContent) }
-                        )
-                    }
+            }
+            LazyColumn {
+                items(notes) { note ->
+                    NoteItem(
+                        note,
+                        onDelete = { viewModel.deleteNote(note.id) },
+                        onUpdate = { newContent -> viewModel.updateNote(note.id, newContent) }
+                    )
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
     var isEditing by remember { mutableStateOf(false) }
@@ -99,10 +121,11 @@ fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
     Card(
         Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        ),
+        elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
             if (isEditing) {
@@ -110,7 +133,10 @@ fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
                     value = editedText,
                     onValueChange = { editedText = it },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
                 Row(
                     Modifier.fillMaxWidth(),
@@ -138,7 +164,11 @@ fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Note")
                         }
                         IconButton(onClick = onDelete) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete Note", tint = Color.Red)
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete Note",
+                                tint = Color.Red
+                            )
                         }
                     }
                 }

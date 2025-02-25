@@ -70,9 +70,9 @@ fun MovieApp() {
 //        composable(Screen.AddNote.route){
 //            AddEditNoteScreen(navController)
 //        }
-        composable(Screen.Detail.route) { backStackEntry ->
+        composable("detail/{movieId}") { backStackEntry ->
             val movieId = backStackEntry.arguments?.getString("movieId") ?: ""
-            DetailScreen(navController, movieId)
+            DetailScreen(movieId, navController)
         }
     }
 }

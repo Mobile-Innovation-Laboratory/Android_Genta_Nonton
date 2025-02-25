@@ -1,5 +1,6 @@
 package com.example.nonton.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,14 +19,17 @@ import androidx.navigation.NavController
 import com.example.nonton.R
 import com.example.nonton.ui.navigation.Screen
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.userProfileChangeRequest
 
 @Composable
 fun RegisterScreen(navController: NavController) {
+    var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -49,6 +53,14 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text("Username") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
@@ -56,6 +68,7 @@ fun RegisterScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(12.dp))
+
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -73,13 +86,27 @@ fun RegisterScreen(navController: NavController) {
 
             Button(
                 onClick = {
+                    if (username.isBlank() || email.isBlank() || password.isBlank()) {
+                        errorMessage = "Semua kolom harus diisi!"
+                        return@Button
+                    }
+
                     isLoading = true
                     auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener { task ->
                             isLoading = false
                             if (task.isSuccessful) {
-                                navController.navigate(Screen.Home.route) {
-                                    popUpTo(Screen.Register.route) { inclusive = true }
+                                val user = auth.currentUser
+                                val profileUpdates = userProfileChangeRequest {
+                                    displayName = username
+                                }
+                                user?.updateProfile(profileUpdates)?.addOnCompleteListener {
+                                    if (it.isSuccessful) {
+                                        Toast.makeText(context, "Registrasi berhasil!", Toast.LENGTH_SHORT).show()
+                                        navController.navigate(Screen.Home.route) {
+                                            popUpTo(Screen.Register.route) { inclusive = true }
+                                        }
+                                    }
                                 }
                             } else {
                                 errorMessage = task.exception?.message ?: "Registration failed"

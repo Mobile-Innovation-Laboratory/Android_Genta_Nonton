@@ -1,5 +1,7 @@
 package com.example.nonton.ui.viewmodel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nonton.data.model.Movie
@@ -13,6 +15,9 @@ class MovieViewModel : ViewModel() {
     private val _movies = MutableStateFlow<List<Movie>>(emptyList())
     val movies = _movies.asStateFlow()
 
+    private val _movieDetail = MutableLiveData<Movie?>()
+    val movieDetail: LiveData<Movie?> get() = _movieDetail
+
     fun fetchMovies(apiKey: String) {
         viewModelScope.launch {
             try {
@@ -23,5 +28,10 @@ class MovieViewModel : ViewModel() {
             }
         }
     }
+
+    suspend fun getMovieById(movieId: String, apiKey: String): Movie {
+        return repository.getMovieById(movieId, apiKey)
+    }
+
 }
 
