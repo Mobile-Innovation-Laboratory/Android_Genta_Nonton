@@ -4,6 +4,9 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -26,6 +30,9 @@ fun RegisterScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
@@ -69,12 +76,36 @@ fun RegisterScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Input Password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        val icon = if (passwordVisible) Icons.Default.Close else Icons.Default.Lock
+                        Icon(imageVector = icon, contentDescription = "Toggle password visibility")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Input Konfirmasi Password
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Confirm Password") },
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                        val icon = if (confirmPasswordVisible) Icons.Default.Close else Icons.Default.Lock
+                        Icon(imageVector = icon, contentDescription = "Toggle password visibility")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -86,8 +117,13 @@ fun RegisterScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    if (username.isBlank() || email.isBlank() || password.isBlank()) {
-                        errorMessage = "Semua kolom harus diisi!"
+                    if (username.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+                        errorMessage = "All fields must be filled in!"
+                        return@Button
+                    }
+
+                    if (password != confirmPassword) {
+                        errorMessage = "Password and Confirm Password do not match!"
                         return@Button
                     }
 
@@ -102,8 +138,8 @@ fun RegisterScreen(navController: NavController) {
                                 }
                                 user?.updateProfile(profileUpdates)?.addOnCompleteListener {
                                     if (it.isSuccessful) {
-                                        Toast.makeText(context, "Registrasi berhasil!", Toast.LENGTH_SHORT).show()
-                                        navController.navigate(Screen.Home.route) {
+                                        Toast.makeText(context, "Registration successfully!", Toast.LENGTH_SHORT).show()
+                                        navController.navigate(Screen.Login.route) {
                                             popUpTo(Screen.Register.route) { inclusive = true }
                                         }
                                     }
@@ -130,3 +166,4 @@ fun RegisterScreen(navController: NavController) {
         }
     }
 }
+

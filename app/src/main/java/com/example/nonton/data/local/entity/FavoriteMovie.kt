@@ -8,5 +8,6 @@ data class FavoriteMovie(
     @PrimaryKey val id: Int,
     val title: String,
     val overview: String,
-    val posterPath: String,
+    val posterUrl: String,
+    val releaseDate: String
 )

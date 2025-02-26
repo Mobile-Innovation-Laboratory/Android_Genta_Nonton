@@ -7,20 +7,20 @@ import androidx.room.RoomDatabase
 import com.example.nonton.data.local.dao.FavoriteMovieDao
 import com.example.nonton.data.local.entity.FavoriteMovie
 
-@Database(entities = [FavoriteMovie::class], version = 1, exportSchema = false)
-abstract class MovieDatabase : RoomDatabase() {
+@Database(entities = [FavoriteMovie::class], version = 1)
+abstract class AppDatabase : RoomDatabase() {
     abstract fun favoriteMovieDao(): FavoriteMovieDao
 
     companion object {
         @Volatile
-        private var INSTANCE: MovieDatabase? = null
+        private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Context): MovieDatabase {
+        fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    MovieDatabase::class.java,
-                    "movie_database"
+                    AppDatabase::class.java,
+                    "favorite_movies_db"
                 ).build()
                 INSTANCE = instance
                 instance
