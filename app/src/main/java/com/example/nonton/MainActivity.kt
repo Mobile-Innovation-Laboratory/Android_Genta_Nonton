@@ -26,7 +26,9 @@ import com.example.nonton.ui.screen.ProfileScreen
 import com.example.nonton.ui.screen.RegisterScreen
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,5 +76,9 @@ fun MovieApp() {
             val movieId = backStackEntry.arguments?.getString("movieId") ?: ""
             DetailScreen(movieId, navController)
         }
+        composable("favorite") {
+            FavoriteScreen(navController)
+        }
+
     }
 }

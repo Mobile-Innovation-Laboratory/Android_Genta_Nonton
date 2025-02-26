@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 class NotesViewModel(private val repository: NotesRepository) : ViewModel() {
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> = _notes.asStateFlow()
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage = _toastMessage.asSharedFlow()
 
     init {
         fetchNotes()
@@ -24,10 +26,10 @@ class NotesViewModel(private val repository: NotesRepository) : ViewModel() {
         }
     }
 
-    // Create: Tambah catatan ke Firestore
     fun addNote(content: String) {
         viewModelScope.launch {
             repository.addNote(content)
+            _toastMessage.emit("Catatan berhasil ditambahkan")
         }
     }
 
@@ -42,6 +44,7 @@ class NotesViewModel(private val repository: NotesRepository) : ViewModel() {
     fun deleteNote(noteId: String) {
         viewModelScope.launch {
             repository.deleteNote(noteId)
+            _toastMessage.emit("Catatan berhasil dihapus")
         }
     }
 }

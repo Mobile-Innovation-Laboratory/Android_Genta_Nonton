@@ -1,6 +1,10 @@
 package com.example.nonton.ui.screen
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +18,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,15 +40,21 @@ fun NoteListScreen(
     val viewModel: NotesViewModel = viewModel(factory = NotesViewModelFactory(repository))
     val notes by viewModel.notes.collectAsState()
     var newNote by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val toastMessage by viewModel.toastMessage.collectAsState(initial = "")
+
+    LaunchedEffect(toastMessage) {
+        if (toastMessage.isNotEmpty()) {
+            Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = {  },
+                title = { },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        navController.navigate(Screen.Home.route)
-                    }) {
+                    IconButton(onClick = { navController.navigate(Screen.Home.route) }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
@@ -52,7 +65,10 @@ fun NoteListScreen(
                 actions = {
                     Text(
                         text = "Movie Notes",
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.Bold
+                        ),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(end = 16.dp)
                     )
@@ -67,7 +83,8 @@ fun NoteListScreen(
                         newNote = ""
                     }
                 },
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Note", tint = Color.White)
             }
@@ -76,7 +93,7 @@ fun NoteListScreen(
         Column(
             Modifier
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(24.dp) // Increased padding for better spacing
                 .fillMaxSize()
         ) {
             OutlinedTextField(
@@ -87,19 +104,30 @@ fun NoteListScreen(
                 singleLine = true,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color.Gray
-                )
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                ),
+                shape = MaterialTheme.shapes.medium // Rounded corners
             )
-            Spacer(Modifier.height(16.dp))
-            AnimatedVisibility(visible = notes.isEmpty()) {
+            Spacer(Modifier.height(24.dp)) // Increased spacing
+            AnimatedVisibility(
+                visible = notes.isEmpty(),
+                enter = fadeIn(animationSpec = tween(500)),
+                exit = fadeOut(animationSpec = tween(500))
+            ) {
                 Text(
                     "No notes available",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Subtle gray
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = FontFamily.SansSerif // Modern font
+                    )
                 )
             }
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp) // Spacing between items
+            ) {
                 items(notes) { note ->
                     NoteItem(
                         note,
@@ -117,6 +145,7 @@ fun NoteListScreen(
 fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
     var isEditing by remember { mutableStateOf(false) }
     var editedText by remember { mutableStateOf(note.content) }
+    val context = LocalContext.current
 
     Card(
         Modifier
@@ -125,7 +154,8 @@ fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
-        elevation = CardDefaults.cardElevation(8.dp)
+        elevation = CardDefaults.cardElevation(4.dp), // Subtle elevation
+        shape = MaterialTheme.shapes.medium // Rounded corners
     ) {
         Column(Modifier.padding(16.dp)) {
             if (isEditing) {
@@ -136,7 +166,8 @@ fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
                     singleLine = true,
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary
-                    )
+                    ),
+                    shape = MaterialTheme.shapes.small // Rounded corners
                 )
                 Row(
                     Modifier.fillMaxWidth(),
@@ -145,11 +176,12 @@ fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
                     TextButton(onClick = {
                         onUpdate(editedText)
                         isEditing = false
+                        Toast.makeText(context, "Catatan berhasil diperbarui", Toast.LENGTH_SHORT).show()
                     }) {
-                        Text("Update")
+                        Text("Update", color = MaterialTheme.colorScheme.primary)
                     }
                     TextButton(onClick = { isEditing = false }) {
-                        Text("Cancel")
+                        Text("Cancel", color = MaterialTheme.colorScheme.error)
                     }
                 }
             } else {
@@ -158,16 +190,26 @@ fun NoteItem(note: Note, onDelete: () -> Unit, onUpdate: (String) -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(note.content, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        note.content,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontFamily = FontFamily.SansSerif // Modern font
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                     Row {
                         IconButton(onClick = { isEditing = true }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Note")
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Edit Note",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                         IconButton(onClick = onDelete) {
                             Icon(
                                 Icons.Default.Delete,
                                 contentDescription = "Delete Note",
-                                tint = Color.Red
+                                tint = MaterialTheme.colorScheme.error
                             )
                         }
                     }

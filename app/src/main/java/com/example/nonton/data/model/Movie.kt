@@ -11,8 +11,7 @@ data class Movie(
     @SerializedName("title") val title: String,
     @SerializedName("overview") val overview: String,
     @SerializedName("poster_path") val posterPath: String,
-    val releaseDate: String? = null
-
+    @SerializedName("release_date") val releaseDate: String
 ) {
     fun getFullPosterUrl() = "https://image.tmdb.org/t/p/w500/$posterPath"
 }

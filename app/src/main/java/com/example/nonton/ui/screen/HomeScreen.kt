@@ -1,6 +1,5 @@
 package com.example.nonton.ui.screen
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,30 +7,37 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.nonton.ui.viewmodel.MovieViewModel
 import com.example.nonton.ui.navigation.Screen
 import com.example.nonton.data.model.Movie
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontFamily
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
-    viewModel: MovieViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: MovieViewModel = hiltViewModel(),
 ) {
     val apiKey = "603a01579ae8725f68c7e821e9f53591"
     val movies by viewModel.movies.collectAsState()
@@ -49,11 +55,16 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Welcome, $userName",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
+                        text = buildAnnotatedString {
+                            append("Welcome, ")
+                            withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                                append(userName)
+                            }
+                        },
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 },
                 actions = {
@@ -63,7 +74,8 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = "Profile",
-                            Modifier.size(35.dp)
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -79,7 +91,13 @@ fun HomeScreen(
                     onClick = { navController.navigate(Screen.Home.route) }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Favorite, contentDescription = "Note") },
+                    icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favourite") },
+                    label = { Text("Favourite") },
+                    selected = false,
+                    onClick = { navController.navigate(Screen.Favorite.route) }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Filled.Create, contentDescription = "Note") },
                     label = { Text("Note") },
                     selected = false,
                     onClick = { navController.navigate(Screen.Note.route) }
@@ -96,9 +114,10 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(movies) { movie ->
+            items(movies?.movies ?: emptyList()) { movie ->
                 MovieItem(movie, navController)
             }
         }
@@ -110,10 +129,9 @@ fun MovieItem(movie: Movie, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable {
-                navController.navigate("detail/${movie.id}") // Implementasi navigasi di sini
-            },
+            .shadow(8.dp, shape = RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { navController.navigate("detail/${movie.id}") },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
@@ -123,20 +141,27 @@ fun MovieItem(movie: Movie, navController: NavController) {
             Image(
                 painter = rememberImagePainter(movie.getFullPosterUrl()),
                 contentDescription = movie.title,
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(RoundedCornerShape(8.dp))
             )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = movie.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    ),
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
+                    fontFamily = FontFamily.SansSerif,
                     text = movie.overview,
                     maxLines = 3,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = Color.Gray
                 )
             }
