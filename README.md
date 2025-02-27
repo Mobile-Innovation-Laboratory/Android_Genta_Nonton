@@ -45,7 +45,7 @@ Take a look at some of the stunning UI elements of Nonton!
 
 1️⃣ **Clone the Repository**  
 ```bash
-git clone https://github.com/username/nonton.git
+git clone https://github.com/Mobile-Innovation-Laboratory/Android_Genta_Nonton.git
 ```
   
 2️⃣ **Open in Android Studio**  
